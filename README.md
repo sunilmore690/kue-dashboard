@@ -2,6 +2,11 @@
 
 > User interface for kue
 
+<img  src='https://raw.githubusercontent.com/sunilmore690/kue-dashboard/master/screenshots/activejob.png'  style="max-height:200px"  alt='Active Job'>
+<img  src='https://raw.githubusercontent.com/sunilmore690/kue-dashboard/master/screenshots/completedjob.png'  style="max-height:200px"  alt='Completed JOb'>
+
+<img  src='https://raw.githubusercontent.com/sunilmore690/kue-dashboard/master/screenshots/searchresult.png'  style="max-height:200px"  alt='Search Result'>
+
 ## Build Setup
 
 ``` bash
