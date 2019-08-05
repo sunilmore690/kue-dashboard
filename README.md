@@ -7,14 +7,21 @@
 
 <img  src='https://raw.githubusercontent.com/sunilmore690/kue-dashboard/master/screenshots/searchresult.png'  style="max-height:200px"  alt='Search Result'>
 
-## Build Setup
+## Start Server
 
-``` bash
+Note: Make sure your kue server running on http://localhost:3000, also you can change endpoint in src/crud.js file
+
+```
 # install dependencies
 npm install
 
 # serve with hot reload at localhost:8080
 npm run dev
+
+```
+## Build Setup
+
+``` bash
 
 # build for production with minification
 npm run build
