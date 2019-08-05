@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const endpoint = 'http://localhost:4000/kue-api'
+const endpoint = window.env.apiUrl || 'http://localhost:3000/kue-api'
 const execute = (method, url, data) => {
   let obj = {
     method,
