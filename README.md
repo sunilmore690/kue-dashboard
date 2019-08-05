@@ -2,6 +2,11 @@
 
 > User interface for kue
 
+#### Note
+This is only User interface built in Vue js.To add Kue-Dashboard to an existing Express application please see [Kue-Dashboard-Express](https://www.npmjs.com/package/kue-dashboard-express)
+
+
+
 <img  src='https://raw.githubusercontent.com/sunilmore690/kue-dashboard/master/screenshots/activejob.png'  style="max-height:200px"  alt='Active Job'>
 <img  src='https://raw.githubusercontent.com/sunilmore690/kue-dashboard/master/screenshots/completedjob.png'  style="max-height:200px"  alt='Completed JOb'>
 
