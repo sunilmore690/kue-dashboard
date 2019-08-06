@@ -7,7 +7,7 @@
           <el-tab-pane v-for="type in jobtypes" :label="type" :key="type"></el-tab-pane>
         </el-tabs>
       </el-col>
-      <el-col :span="20" :sm="20">
+      <el-col :span="19" :sm="19">
         <el-row style="padding-bottom:10px">
           <el-col :offset="19" :sm="5">
             <el-input
@@ -55,10 +55,11 @@
             <span slot="label">
               <el-badge :value="results.length" class="item" type="primary">Search Results</el-badge>
             </span>
-            <List :jobs="results" v-loading="loading" status="searchresults" :jobtype='jobtype' />
+            <List :jobs="results" v-loading="loading" status="searchresults" :jobtype='jobtype' @destroyjob='deleteJob'/>
           </el-tab-pane>
         </el-tabs>
       </el-col>
+      <el-col :span="1" :sm="1"></el-col>
     </el-row>
   </div>
 </template>
@@ -126,6 +127,9 @@ export default {
         this.results.push(await crud.get("/job/" + id));
       });
       this.loading = false;
+    },
+    deleteJob(id){
+      this.results = this.results.filter(job=>job.id!=id)
     }
   },
   async created() {

@@ -4,7 +4,7 @@
     <el-radio v-model="sort" label="asc" @change="fetchData">Sort by last Jobs</el-radio>
     <el-button type circle icon="el-icon-refresh" @click="fetchData"></el-button>
     <el-col :sm="24" style="padding-top:20px">
-      <List :jobs="jobs" :status='status' :jobtype='jobtype' />
+      <List :jobs="jobs" :status='status' :jobtype='jobtype' @destroyjob='deleteJob'/>
 
       <el-pagination
         layout="prev, pager, next"
@@ -31,6 +31,9 @@ export default {
     };
   },
   methods: {
+    deleteJob(id){
+      this.jobs = this.jobs.filter(job=>job.id!=id)
+    },
     handlePageChange(page) {
       this.page = page;
       this.fetchData();

@@ -1,34 +1,33 @@
 <template>
-  <el-collapse-item >
-     <template slot="title">
-          <el-tag type="info">{{job.id}}</el-tag>&nbsp;
-          <el-tag v-if="jobtype == 'all'">{{job.type}}</el-tag>&nbsp;&nbsp;
+    <el-collapse-item  :key="job.id" :name="job.id" >
+        <template slot="title">
+          <div >
+            <el-tag type="info">{{job.id}}</el-tag>&nbsp;
+          <el-tag v-if="showtype">{{job.type}}</el-tag>&nbsp;&nbsp;
           <span
             style="font-weight: 800; font-style: initial; font-size: medium;"
           >{{job.data.title}}</span>
 
-          <span style="position:absolute;right:5%">
-            <el-tag v-if="status == 'searchresults'" :type="getTagType(job.state)">{{job.state}}</el-tag>
-            <el-progress
-              v-if="status=='active'"
+          <span  style="position:absolute;right:5%;top:6px;display:flex">
+               <el-progress
+              v-if="job.state =='active'"
               :width="40"
               :stroke-width="3"
-              style="margin-top:40%"
+              
               type="circle"
               :percentage="parseInt(job.progress+'')"
             ></el-progress>
+            <el-tag v-if="showstate"   :type="getTagType(job.state)">{{job.state}}</el-tag>
+           
           </span>
-          <el-button
-           v-show="job.showicon"
-            type="danger"
-            circle
-            size="mini"
-            style="position:absolute;margin-top:-25px;left:98%"
-          >
-            <i class="el-icon-close"></i>
-          </el-button>
+         
+          </div>
+          
         </template>
-        <div style="text-align:left;font-size:medium">
+        <el-row>
+            <el-col :span="12" :xs="24">
+               <div style="text-align:left;font-size:medium">
+          
           <div v-if="job.state == 'complete'">
             <span>
               <b>Duration</b>
@@ -49,63 +48,149 @@
           </div>
         </div>
 
-        <el-divider v-if="job.status=='failed'"></el-divider>
-        <div v-if="job.status=='failed'"><b>{{{job.error.split('\n').join('<br>')}}</b></div>
+            </el-col>
+            <el-col :span="12" :xs="24">
+                <b>State:</b> <el-select v-model="job.state"  size='mini' placeholder="Select" @change="updateState"><el-option
+      v-for="state in states"
+      :key="state.value"
+      :label="state.name"
+      :value="state.value">
+    </el-option>
+    </el-select>
+    <div>
+        <br>
+        
+        <el-popover
+  placement="top"
+  width="160"
+  v-model="visible">
+  <p>Are you sure to delete this?</p>
+  <div style="text-align: right; margin: 0">
+    <el-button size="mini" type="text" @click="visible=false;" >cancel</el-button>
+    <el-button type="primary" size="mini" @click="deleteJob();visible = false">confirm</el-button>
+  </div>
+  <el-button slot='reference' type="danger" size="mini">Delete</el-button>
+</el-popover>
+
+    </div>
+
+     
+            </el-col>
+          </el-row>
+       
+        <el-divider v-if="job.state=='failed'"></el-divider>
+        <div v-if="job.state=='failed'">
+            <h3>Error</h3>
+            <span v-html="job.error.split('\n').join('<br>')+''"></span>
+            </div>
         <el-divider></el-divider>
+        <el-button type="warning" @click="getLog" size="mini">See Log</el-button>
+            
         <div style="overflow-y:auto" :id="'log'+job.id">
           <div style="min-height:50px;max-height:500px;text-align:left;font-size:medium" >
             <div v-if="logs.length == 0">Loading logs ...</div>
             <div v-else v-for="(log,index) in logs" :key="'log'+index">{{log}}</div>
           </div>
         </div>
- </el-collapse-item>
+      </el-collapse-item>
 </template>
 <script>
 import crud from "@/crud";
 export default {
-    props:['job','index','status','jobtype'],
+    props:['job','logsync','showstate','showtype','activeName'],
     data(){
-        return {
-              logs: [],
+        return{
+            visible:false,
+            logs:[],
+             states:[{
+        name:'Queued',
+        value:'inactive'
+      },{
+        name:'Active',
+        value:'active'
+      },{
+        name:'Failed',
+        value:'failed'
+      },
+      {
+        name:'Delayed',
+        value:'delayed'
+      },
+      {
+        name:'Complete',
+        value:'complete'
+      }]
         }
     },
     watch:{
         activeName(oldvalue,newvalue){
-            this.loadLog(newvalue)
+            console.log('oldvalue',oldvalue)
+            console.log('newvalue',newvalue)
+        }
+    },
+    beforeDestroy(){
+        if(this.interval){
+            window.clearInterval(this.interval)
         }
     },
     methods:{
-         scrollToEnd: function(elName) {    	
+        async deleteJob(){
+            await crud.delete(`/job`,this.job.id)
+            this.$emit('destroyjob',this.job.id)
+        },
+        changeState(id){
+            console.log('id',id)
+        },
+        async updateState(state){
+            const id = this.job.id
+    //  http://optportal-node.optcentral.com/job/133/state/failed
+      await crud.put(`/job/${id}/state/${state}`)
+      this.$emit('destroyjob',this.job.id)
+    },
+        getTagType(state) {
+      if (state == "complete") {
+        return "success";
+      } else if (state == "failed") {
+        return "danger";
+      } else if (state == "active") {
+        return "";
+      } else if (state == "delayed") {
+        return "warning";
+      } else if (state == "inactive") {
+        return "info";
+      }
+    },
+    scrollToEnd: function(elName) {    	
       var container = this.$el.querySelector(elName);
       container.scrollTop = container.scrollHeight;
     },
-    loadLog(id) {
-      this.logs = [];
-      this.getLog(id);
-    },
-    async getLog(id) {
+        async getLog() {
+
+         const id = this.job.id;
       //   this.loading = true;
       //    this.logs = [];
       let logs = await crud.get(`/job/${id}/log`);
       let newlogs = logs.slice(this.logs.length);
 
       console.log("newlogs", newlogs);
-      newlogs.forEach(log => {
-        this.logs.push(log);
-      });
+      this.logs.push(...newlogs)
       this.scrollToEnd('#log'+id)
+      if(this.logsync && !this.interval ){
+          this.interval =    setInterval(() => {
+        this.getLog();
+      }, 5000);
+        }
       //   if
       //   this.loading = false;
     }
-    },
-    created(){
-         if (this.status == "active") {
-      setInterval(() => {
-        if (this.activeName == this.job.id) {
-          this.getLog(this.activeName);
-        }
-      }, 5000);
     }
-    }
-};
+}
 </script>
+<style>
+.el-collapse-item__header{
+    position: relative
+}
+</style>
+
+
+                                             

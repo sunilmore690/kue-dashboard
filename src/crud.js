@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const endpoint = window.env.apiUrl || 'http://localhost:3000/kue-api'
+const endpoint = window.env?window.env.apiUrl : 'http://localhost:3000/kue-api'
 const execute = (method, url, data) => {
   let obj = {
     method,
@@ -33,12 +33,12 @@ let obj = {
   delete(URL, id) {
     return execute("delete", endpoint + URL + "/" + id);
   },
-  update(URL,id, data) {
+  put(URL,id, data) {
     let url = endpoint + URL;
     if (id) {
       url += `/${id}`;
     }
-    return execute("update", url, data);
+    return execute("put", url, data);
   }
 };
 export default obj;
