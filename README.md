@@ -1,4 +1,4 @@
-# kue-ui
+# kue-dashboard
 
 > User interface for kue
 
