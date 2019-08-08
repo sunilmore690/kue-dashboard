@@ -24,16 +24,14 @@ export default {
       logs: [],
       loading: false,
       activeName: "",
-      showByIndex: null,
+      showByIndex: null
       // myjobs:[],
     };
   },
   computed: {
     log() {
       return this.logs.join("/n");
-    },
-    
-    
+    }
   },
   methods: {
     async updateState(id, state) {
