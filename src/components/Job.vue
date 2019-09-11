@@ -6,7 +6,7 @@
         <el-tag v-if="showtype">{{job.type}}</el-tag>&nbsp;&nbsp;
         <span
           style="font-weight: 800; font-style: initial; font-size: medium;"
-        >{{job.data.title}}</span>
+        >{{job.data.title | trim(90)}}</span>
 
         <span style="position:absolute;right:5%;top:6px;display:flex">
           <el-progress
@@ -16,12 +16,13 @@
             type="circle"
             :percentage="parseInt(job.progress+'')"
           ></el-progress>
+          <span v-if="job.state =='delayed'">{{delayedtime | readableDuration}}</span>
           <el-tag v-if="showstate" :type="getTagType(job.state)">{{job.state}}</el-tag>
         </span>
       </div>
     </template>
     <el-row>
-     <el-col :span="24" :xs="24">
+      <el-col :span="24" :xs="24">
         <b>State:</b>
         <el-select v-model="job.state" size="mini" placeholder="Select" @change="updateState">
           <el-option
@@ -65,17 +66,17 @@
             : {{job.updated_at | humenDate}}
           </div>
           <div class="info">
-              <div v-for="(value, propertyName) in job.data" :key="propertyName">
-                <b>{{propertyName}}</b>: {{value}}    
-              </div>
+            <div v-for="(value, propertyName) in job.data" :key="propertyName">
+              <b>{{propertyName}}</b>
+              : {{value}}
+            </div>
           </div>
         </div>
       </el-col>
-     
     </el-row>
 
-    <el-divider v-if="job.state=='failed'"></el-divider>
-    <div v-if="job.state=='failed'">
+    <div v-if="job.state=='failed' && job.error">
+      <el-divider></el-divider>
       <h3>Error</h3>
       <span v-html="job.error.split('\n').join('<br>')+''"></span>
     </div>
@@ -84,7 +85,7 @@
 
     <div style="overflow-y:auto" :id="'log'+job.id">
       <div style="min-height:50px;max-height:500px;text-align:left;font-size:medium">
-        <div v-if="loading">Loading logs ...</div>
+        <div v-if="!logs.length">Loading logs ...</div>
         <div v-else v-for="(log,index) in logs" :key="'log'+index">{{log}}</div>
       </div>
     </div>
@@ -98,7 +99,8 @@ export default {
     return {
       visible: false,
       logs: [],
-      loading:false,
+      delayedtime:'',
+      loading: false,
       states: [
         {
           name: "Queued",
@@ -166,12 +168,11 @@ export default {
       container.scrollTop = container.scrollHeight;
     },
     async getLog() {
-        this.loading = true;
       const id = this.job.id;
       //   this.loading = true;
       //    this.logs = [];
       let logs = await crud.get(`/job/${id}/log`);
-      this.loading = false;
+      //   this.loading = false;
       let newlogs = logs.slice(this.logs.length);
 
       console.log("newlogs", newlogs);
@@ -185,6 +186,34 @@ export default {
       //   if
       //   this.loading = false;
     }
+  },
+  created() {
+    
+    const {delay,created_at,state} = this.job;
+    console.log('delay',delay)
+    console.log('created_at',created_at)
+    if(state == 'delayed' && delay){
+      let delayedTime = new Date(parseInt(created_at))
+      delayedTime.setMilliseconds(delayedTime.getMilliseconds()+parseInt(delay))
+      if(delayedTime< new Date()){
+         //this.delayedtime = 'Delayed Time Exceeds'
+      }else{
+        let interval = setInterval(()=>{
+          // console.log('delayedtime',delayedTime)
+          let msdate = new Date();
+          // let ms = msdate.getMilliseconds()
+          // console.log('ms',ms)
+          if(delayedTime < msdate){
+            return 0;
+          }
+          let diff  = delayedTime - msdate
+          this.delayedtime = diff
+          console.log('delayedtime',this.delayedtime)
+        },1000)
+    }
+    }
+   
+    
   }
 };
 </script>

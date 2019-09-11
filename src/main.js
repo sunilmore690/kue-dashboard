@@ -12,6 +12,12 @@ Array.prototype.diff = function(a) {
 };
 Vue.use(ElementUI);
 Vue.config.productionTip = false
+Vue.filter('trim',(str,n)=>{
+  if(str.length > n){
+    return str.substr(0,n) + '...'
+  }
+  return str;
+})
 Vue.filter("readableDuration",(millisec)=>{
   var seconds = (millisec / 1000).toFixed(0);
         var minutes = Math.floor(seconds / 60);
